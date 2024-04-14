@@ -1,6 +1,7 @@
 version: "3.5"
 services:
   elasticsearch:
+    restart: unless-stopped
     container_name: temporal-elasticsearch
     environment:
       - cluster.routing.allocation.disk.threshold_enabled=true
@@ -18,6 +19,7 @@ services:
     volumes:
       - /var/lib/elasticsearch/data
   postgresql:
+    restart: unless-stopped
     container_name: temporal-postgresql
     environment:
       POSTGRES_PASSWORD: temporal
@@ -30,6 +32,7 @@ services:
     volumes:
       - /var/lib/postgresql/data
   temporal:
+    restart: unless-stopped
     container_name: temporal
     depends_on:
       - postgresql
@@ -54,6 +57,7 @@ services:
     volumes:
       - ./dynamicconfig:/etc/temporal/config/dynamicconfig
   temporal-admin-tools:
+    restart: unless-stopped
     container_name: temporal-admin-tools
     depends_on:
       - temporal
@@ -66,17 +70,19 @@ services:
     stdin_open: true
     tty: true
   temporal-ui:
+    restart: unless-stopped
     container_name: temporal-ui
     depends_on:
       - temporal
     environment:
       - TEMPORAL_ADDRESS=temporal:7233
-      - TEMPORAL_CORS_ORIGINS=http://localhost:3000
+      - TEMPORAL_CORS_ORIGINS=http://server1.local:3000
+      - TEMPORAL_CSRF_COOKIE_INSECURE=true
     image: temporalio/ui:${TEMPORAL_UI_VERSION}
     networks:
       - temporal-network
     ports:
-      - 8080:8080
+      - 8055:8080
 networks:
   temporal-network:
     driver: bridge
